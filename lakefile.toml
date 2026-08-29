@@ -1,4 +1,4 @@
-name = "proof-carrying-provenance-adoption"
+name = "proof-carrying-provenance-assurance"
 version = "0.1.0"
 defaultTargets = ["ProofCarryingProvenanceAdoption"]
 
