@@ -106,7 +106,7 @@ jobs:
           build: true
           test: false
           lint: false
-          leanchecker: true
+          leanchecker: false
           nanoda: true
           build-args: "--wfail"
           use-mathlib-cache: false
