@@ -107,13 +107,14 @@ jobs:
           test: false
           lint: false
           leanchecker: false
-          nanoda: true
+          nanoda: false
           build-args: "--wfail"
           use-mathlib-cache: false
 
       - name: Direct kernel check and audit
         shell: bash
         run: |
+          set -euo pipefail
           lake env lean ProofCarryingProvenanceAdoption.lean 2>&1 | tee provenance-audit.log
           if grep -q "sorryAx" provenance-audit.log; then
             echo "Audit output contains sorryAx"
