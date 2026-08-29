@@ -1,0 +1,14 @@
+.lake/
+work/
+outputs/
+
+*.olean
+*.ilean
+*.c
+*.o
+*.so
+*.dll
+*.dylib
+*.exe
+
+provenance-audit.log

@@ -1,0 +1,6 @@
+{"version": "1.2.0",
+ "packagesDir": ".lake/packages",
+ "packages": [],
+ "name": "«proof-carrying-provenance-adoption»",
+ "lakeDir": ".lake",
+ "fixedToolchain": false}

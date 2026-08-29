@@ -1,0 +1,121 @@
+name: Lean verification
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lean 4.33.1
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Check source hygiene
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          blocked = [
+              "s" + "orry",
+              "ad" + "mit",
+              "ax" + "iom",
+              "op" + "aque",
+              "un" + "safe",
+              "native" + "_" + "decide",
+          ]
+          forbidden_bool_inputs = [
+              "valid" + "Primary" + "Evidence",
+              "valid" + "Authorization" + "Evidence",
+              "valid" + "IndependentDevelopment" + "Evidence",
+              "valid" + "Conflict" + "Evidence",
+              "structure " + "Provenance" + "Facts",
+          ]
+          required_theorems = [
+              "verifyCertificateMetadata_sound",
+              "VerifiedCertificateFor.provesQuery",
+              "verifyPrimaryEvidence_some_sound",
+              "verifyAuthorizationEvidence_some_sound",
+              "verifyIndependentDevelopmentEvidence_some_sound",
+              "verifyConflictEvidence_some_sound",
+              "clear_status_has_verified_clearance_evidence",
+              "conflicted_status_has_verified_conflict_evidence",
+              "unresolved_status_has_no_verified_clearance_or_conflict",
+              "no_verified_clearance_cannot_be_clear",
+              "provenance_status_invariant_under_market_signals",
+              "popularity_cannot_clear_unresolved_provenance",
+              "unresolved_material_use_requires_scoped_review",
+              "valid_resolution_clears_scoped_review",
+              "scoped_review_does_not_propagate_to_unrelated_scope",
+              "verified_provenance_adoption_friction_dominance",
+              "unique_clear_candidate_selected_under_hard_gate",
+              "popularity_bonus_can_mask_unresolved_provenance",
+              "earliest_timestamp_alone_is_not_clearance",
+              "global_contagion_policy_violates_scope_limitation",
+              "tampered_primary_digest_is_rejected",
+              "tampered_primary_kind_is_rejected",
+              "tampered_authorization_subject_is_rejected",
+              "tampered_authorization_origin_digest_is_rejected",
+              "tampered_authorization_issuer_is_rejected",
+              "tampered_authorization_kind_is_rejected",
+              "tampered_independent_digest_is_rejected",
+              "tampered_independent_subject_is_rejected",
+              "conflict_different_target_is_rejected",
+              "conflict_wrong_kind_is_rejected",
+              "candidate_scope_uses_target_artifact_and_claim",
+              "context_claim_mismatch_is_rejected",
+              "same_origin_assertions_do_not_form_conflict",
+          ]
+          paths = [Path("ProofCarryingProvenanceAdoption.lean")]
+          failures = []
+          for path in paths:
+              text = path.read_text(encoding="utf-8")
+              for word in blocked:
+                  if re.search(r"\b" + re.escape(word) + r"\b", text):
+                      failures.append(f"{path}: blocked token {word}")
+              for token in forbidden_bool_inputs:
+                  if token in text:
+                      failures.append(f"{path}: hand-input provenance bool remains: {token}")
+              for theorem in required_theorems:
+                  if theorem not in text:
+                      failures.append(f"{path}: missing theorem/audit target {theorem}")
+          if failures:
+              raise SystemExit("\n".join(failures))
+          PY
+
+      - name: Lean action
+        uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1
+        with:
+          auto-config: false
+          build: true
+          test: false
+          lint: false
+          leanchecker: true
+          nanoda: true
+          build-args: "--wfail"
+          use-mathlib-cache: false
+
+      - name: Direct kernel check and audit
+        shell: bash
+        run: |
+          lake env lean ProofCarryingProvenanceAdoption.lean 2>&1 | tee provenance-audit.log
+          if grep -q "sorryAx" provenance-audit.log; then
+            echo "Audit output contains sorryAx"
+            exit 1
+          fi

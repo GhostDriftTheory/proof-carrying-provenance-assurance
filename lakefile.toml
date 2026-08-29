@@ -1,0 +1,6 @@
+name = "proof-carrying-provenance-adoption"
+version = "0.1.0"
+defaultTargets = ["ProofCarryingProvenanceAdoption"]
+
+[[lean_lib]]
+name = "ProofCarryingProvenanceAdoption"
