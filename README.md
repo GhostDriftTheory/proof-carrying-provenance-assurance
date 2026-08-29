@@ -1,5 +1,7 @@
 # Proof-Carrying Provenance Assurance
 
+[![Lean CI](https://github.com/GhostDriftTheory/proof-carrying-provenance-assurance/actions/workflows/lean.yml/badge.svg)](https://github.com/GhostDriftTheory/proof-carrying-provenance-assurance/actions/workflows/lean.yml)
+
 Lean 4 formalization of scoped, contestable provenance review for technology
 adoption.
 
